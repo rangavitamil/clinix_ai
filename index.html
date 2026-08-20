@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Clinix AI</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            height: 100vh;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .header {
+            background: #1769aa;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+        }
+
+        .warning {
+            background: #fff3cd;
+            color: #664d03;
+            padding: 10px 15px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .chat-box {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            border-radius: 12px;
+            max-width: 80%;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .user {
+            background: #dbeafe;
+            margin-left: auto;
+        }
+
+        .bot {
+            background: #eef2f7;
+            margin-right: auto;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 13px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        button {
+            border: none;
+            padding: 13px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #1769aa;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        #clearBtn {
+            background: #777;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+
+        <h1>🩺 Clinix AI</h1>
+
+        <p>AI-Powered Clinical Knowledge Assistant</p>
+
+    </div>
+
+
+    <div class="warning">
+
+        ⚠️ Clinix AI provides general educational information and
+        is not a replacement for a qualified healthcare professional.
+
+    </div>
+
+
+    <div id="chatBox" class="chat-box">
+
+        <div class="message bot">
+
+            Hello! 👋 I am Clinix AI.
+
+            Ask me a general clinical knowledge question.
+
+        </div>
+
+    </div>
+
+
+    <div class="input-area">
+
+        <input
+            type="text"
+            id="messageInput"
+            placeholder="Ask a clinical question..."
+            autocomplete="off"
+        >
+
+        <button onclick="sendMessage()">
+            Send
+        </button>
+
+        <button id="clearBtn" onclick="clearChat()">
+            Clear
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+async function sendMessage() {
+
+    const input =
+        document.getElementById("messageInput");
+
+    const message =
+        input.value.trim();
+
+    if (!message) {
+        return;
+    }
+
+    addMessage(message, "user");
+
+    input.value = "";
+
+    addMessage("Thinking...", "bot");
+
+    try {
+
+        const response = await fetch("/chat", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                message: message
+            })
+
+        });
+
+
+        const data = await response.json();
+
+
+        const chatBox =
+            document.getElementById("chatBox");
+
+        chatBox.removeChild(chatBox.lastElementChild);
+
+
+        if (data.success) {
+
+            addMessage(
+                data.response,
+                "bot"
+            );
+
+        } else {
+
+            addMessage(
+                "Error: " + data.error,
+                "bot"
+            );
+
+        }
+
+    } catch (error) {
+
+        const chatBox =
+            document.getElementById("chatBox");
+
+        chatBox.removeChild(chatBox.lastElementChild);
+
+        addMessage(
+            "Unable to connect to the server.",
+            "bot"
+        );
+
+        console.error(error);
+    }
+
+}
+
+
+function addMessage(text, type) {
+
+    const chatBox =
+        document.getElementById("chatBox");
+
+    const messageDiv =
+        document.createElement("div");
+
+    messageDiv.classList.add(
+        "message",
+        type
+    );
+
+    messageDiv.textContent = text;
+
+    chatBox.appendChild(messageDiv);
+
+    chatBox.scrollTop =
+        chatBox.scrollHeight;
+
+}
+
+
+function clearChat() {
+
+    const chatBox =
+        document.getElementById("chatBox");
+
+    chatBox.innerHTML = "";
+
+    addMessage(
+        "Hello! 👋 Ask me a clinical knowledge question.",
+        "bot"
+    );
+
+}
+
+
+document
+    .getElementById("messageInput")
+    .addEventListener("keypress", function(event) {
+
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+
+    });
+
+</script>
+
+</body>
+
+</html>
