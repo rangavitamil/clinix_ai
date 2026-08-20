@@ -2,3 +2,4 @@ Flask
 google-genai
 firebase-admin
 python-dotenv
+gunicorn
